@@ -153,7 +153,8 @@ def main(args):
 
         cam_data = calib_handle.dataset.cam_data
 
-        if len(calibed_cam) < cfg.cam_num:
+        # if len(calibed_cam) < cfg.cam_num:
+        if 0:
             print_info_blue(
                 f'check not calibed camera, already calibed are {calibed_cam} ', output=True)
 
@@ -162,6 +163,7 @@ def main(args):
             if len(args.cam_ids) == 0:
                 final_extrs = compute_extrs_handle(ori_data)
             else:
+                final_extrs = {}
                 cam0 = args.cam_ids[0]
                 cam1 = args.cam_ids[1]
                 final_extrs[cam0] = np.eye(4)
