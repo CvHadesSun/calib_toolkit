@@ -87,7 +87,7 @@ def main(args):
         calib_handle.set_calib_combinations(comb_manual)
 
         calib_handle.run_multi()
-        # calib_handle.process_two_cam(['Cam4', 'Cam5'])
+        calib_handle.process_two_cam(['Cam4', 'Cam5'])
 
         write_extr(calib_handle.cam_extrs_2, extr_dir)
 

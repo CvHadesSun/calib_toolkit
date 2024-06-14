@@ -68,9 +68,9 @@ class NonLinearOptimizer:
             pts1 = self.pts1[random_index]
             error, ab_error = self.error_valid(
                 self.opt_params, pts0, pts1, export_flag=True)
-            errors.append(ab_error*1e+3)
+            errors.append(ab_error)
             # break
-            if ab_error < 5*1e-3:
+            if ab_error < 5*1e-3 or ab_error > 2:
                 break
             # result = least_squares(
             #     NonLinearOptimizer.loss_func, self.opt_params, args=(pts0, pts1))

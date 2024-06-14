@@ -256,7 +256,7 @@ def undist_rgbd(coffs, intr, rgb, depth):
     return color_image_rect, depth_image_rect
 
 
-def detect_corners(img, size=(11, 8)):
+def detect_corners(img, size):
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     chessboard_size = size

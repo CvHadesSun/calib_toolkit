@@ -157,8 +157,10 @@ class Caliber:
 
         undist_flag = _global.get_value('undistort')
 
-        pts0 = self.dataset.get_cam_pts(cam0, pairs, undistort=undist_flag)
-        pts1 = self.dataset.get_cam_pts(cam1, pairs, undistort=undist_flag)
+        pts0 = self.dataset.get_cam_pts(
+            cam0, pairs, self.chessboard_size, undistort=undist_flag)
+        pts1 = self.dataset.get_cam_pts(
+            cam1, pairs, self.chessboard_size, undistort=undist_flag)
 
         if len(pts0) < 1 or len(pts1) < 1:
             print_info_red(f"{cam0}--{cam1} no crosspondence and ignore.")

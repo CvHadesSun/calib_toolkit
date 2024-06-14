@@ -70,7 +70,7 @@ class Dataset:
             abs(len(self.cam_data[cam_id1]['rgbs']) -
                 len(self.cam_data[cam_id2]['rgbs']))
 
-    def get_cam_pts(self, cam_id, frame_ids, undistort=True):
+    def get_cam_pts(self, cam_id, frame_ids, chessboard_size, undistort=True):
 
         print_info_green(
             f"get 3d pts from rgbd for {cam_id}---frame:{frame_ids}")
@@ -90,7 +90,7 @@ class Dataset:
                 else:
                     undist_img = img
                     undist_depth = depth
-                corners = detect_corners(undist_img)
+                corners = detect_corners(undist_img, chessboard_size)
 
                 if corners is not None:
                     uvs = np.array(corners).reshape(-1, 2).astype(np.float32)
