@@ -294,8 +294,8 @@ class Caliber:
 
         # init_pose = self.cam_extrs_2[f"{cam0}_{cam1}"]
 
-        pts0 = self.dataset.get_cam_pts(cam0, frame_pairs, undistort=False)
-        pts1 = self.dataset.get_cam_pts(cam1, frame_pairs, undistort=False)
+        pts0 = self.dataset.get_cam_pts(cam0, frame_pairs,self.chessboard_size, undistort=False)
+        pts1 = self.dataset.get_cam_pts(cam1, frame_pairs,self.chessboard_size, undistort=False)
 
         if len(pts0) < 1 or len(pts1) < 1:
             print_info_red(f"{cam0}--{cam1} no crosspondence and ignore.")
