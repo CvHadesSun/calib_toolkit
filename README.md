@@ -49,5 +49,5 @@ python demo.py -s path/to/data --operation 1 -n 16
 
 4. compute error.
 ```
-python demo.py -s path/to/data --operation 3 -n 16 --vis_pcd 0 1 2 10 --frame_id 0
+python demo.py -s path/to/data --operation 3 -n 16 --vis_pcd Cam0 Cam1 Cam2 Cam10 --frame_id 0
 ```
