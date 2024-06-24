@@ -25,6 +25,7 @@ colorama
 --operation : uthe calib operation: (0: calib), (1: error inference), (2: pcd vis)
 --frame_id : the pcd vis frame id,default=0
 --cam_ids : vis which camera pcd, defalut = [all cameras.]
+--vis_pcd : vis raw depth camera pcds,default=[]
 
 ```
 
@@ -33,15 +34,20 @@ colorama
 1. calib camera
 
 ```
-python demo.py -s path/to/data --operation 0 -n 12 
+python demo.py -s path/to/data --operation 0 -n 16 
 ```
 
 2. vis cpd
 ```
-python demo.py -s path/to/data --operation 2 -n 12 --frame_id 10
+python demo.py -s path/to/data --operation 2 -n 16 --frame_id 10
 ```
 
 3. compute error.
 ```
-python demo.py -s path/to/data --operation 1 -n 12 
+python demo.py -s path/to/data --operation 1 -n 16 
+```
+
+4. compute error.
+```
+python demo.py -s path/to/data --operation 3 -n 16 --vis_pcd 0 1 2 10 --frame_id 0
 ```

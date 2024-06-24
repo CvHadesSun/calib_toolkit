@@ -79,7 +79,7 @@ def main(args):
 
         if not os.path.exists(failed_dir):
             comb_manual = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5],
-                           [0, 6], [6, 7], [7, 8], [8, 9], [9, 10], [10, 11]]  # can modify .
+                           [0, 6], [6, 7], [7, 8], [8, 9], [9, 10], [10, 11], [13, 14], [14, 15], [0, 12], [12, 13]]  # can modify .
 
         else:  # calib failed camera.
             comb_manual = read_failed_calib(failed_dir)
@@ -198,6 +198,43 @@ def main(args):
 
                 out_name = f"{cfg.output_path}/{key}.ply"
 
+                img2pcd(new_img, new_depth, intr, extr, out_name)
+                os.remove(new_depth)
+                os.remove(new_img)
+
+    elif OP == 3:
+
+        # vis camera pcd.
+        frame_id = args.frame_id
+        cam_data = calib_handle.dataset.cam_data
+        cam_ids = args.vis_pcd
+        if len(cam_ids) > 0:
+            for key in cam_ids:
+                img = cam_data[key]['rgbs'][frame_id]
+                base_name = os.path.basename(img).replace('bmp', 'png')
+
+                intr = np.array(calib_handle.dataset.cam_intrs[key]['intr'])
+                dist = np.array(calib_handle.dataset.cam_intrs[key]['dist'])
+                depth = cam_data[key]['depths'][frame_id]
+
+                bmp_img = cv2.imread(img)
+                depth_img = cv2.imread(depth, -1)
+
+                if args.undistort:
+                    undist_img, undist_depth = undist_rgbd(
+                        dist, intr, bmp_img, depth_img)
+                else:
+                    undist_img = bmp_img
+                    undist_depth = depth_img
+
+                cv2.imwrite(f'{cfg.output_path}/{base_name}', undist_img)
+                cv2.imwrite(
+                    f"{cfg.output_path}/depth_{base_name}", undist_depth)
+
+                new_img = f'{cfg.output_path}/{base_name}'
+                new_depth = f"{cfg.output_path}/depth_{base_name}"
+                extr = np.eye(4)
+                out_name = f"raw_{cfg.output_path}/{key}.ply"
                 img2pcd(new_img, new_depth, intr, extr, out_name)
                 os.remove(new_depth)
                 os.remove(new_img)

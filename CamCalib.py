@@ -22,6 +22,8 @@ class Caliber:
         self.criteria = (cv2.TERM_CRITERIA_EPS +
                          cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
+        self.extr_cams = ["Cam12", "Cam13", "Cam14", "Cam15"]
+
         self.dataset = Dataset(cfg.root_dir, cfg.cam_num)
 
         objp = np.zeros((np.prod(self.chessboard_size), 3), np.float32)
@@ -96,12 +98,18 @@ class Caliber:
             return pair_ids
 
         undist_flag = _global.get_value('undistort')
+
         if undist_flag:
             cam0_dist = np.array(self.cam_intrs[cam0]["dist"])
             cam1_dist = np.array(self.cam_intrs[cam1]["dist"])
         else:
             cam0_dist = np.array([0.0]*5)
             cam1_dist = np.array([0.0]*5)
+
+        if cam0 in self.extr_cams:
+            cam0_dist = np.array(self.cam_intrs[cam0]["dist"])
+        if cam1 in self.extr_cams:
+            cam1_dist = np.array(self.cam_intrs[cam1]["dist"])
 
         cam0_intr = np.array(self.cam_intrs[cam0]['intr'])
 
@@ -119,11 +127,18 @@ class Caliber:
         # self.update_intrs(cam0, cam1, cam0_intr,
         #                   cam0_dist, cam1_intr, cam1_dist)
 
-        rms, mtx_left, dist_left, mtx_right, dist_right, R, T, E, F = cv2.stereoCalibrate(
-            objpoints_stereo, imgpoints_left, imgpoints_right,
-            cam0_intr, cam0_dist,
-            cam1_intr, cam1_dist,
-            gray_left.shape[::-1], criteria=self.criteria)
+        if cam0 in self.extr_cams or cam1 in self.extr_cams:
+            rms, mtx_left, dist_left, mtx_right, dist_right, R, T, E, F = cv2.stereoCalibrate(
+                objpoints_stereo, imgpoints_left, imgpoints_right,
+                cam0_intr, cam0_dist,
+                cam1_intr, cam1_dist,
+                gray_left.shape[::-1], criteria=self.criteria, flags=cv2.CALIB_FIX_INTRINSIC)
+        else:
+            rms, mtx_left, dist_left, mtx_right, dist_right, R, T, E, F = cv2.stereoCalibrate(
+                objpoints_stereo, imgpoints_left, imgpoints_right,
+                cam0_intr, cam0_dist,
+                cam1_intr, cam1_dist,
+                gray_left.shape[::-1], criteria=self.criteria)
 
         pose = np.eye(4).astype(np.float32)
 
@@ -294,8 +309,10 @@ class Caliber:
 
         # init_pose = self.cam_extrs_2[f"{cam0}_{cam1}"]
 
-        pts0 = self.dataset.get_cam_pts(cam0, frame_pairs,self.chessboard_size, undistort=False)
-        pts1 = self.dataset.get_cam_pts(cam1, frame_pairs,self.chessboard_size, undistort=False)
+        pts0 = self.dataset.get_cam_pts(
+            cam0, frame_pairs, self.chessboard_size, undistort=False)
+        pts1 = self.dataset.get_cam_pts(
+            cam1, frame_pairs, self.chessboard_size, undistort=False)
 
         if len(pts0) < 1 or len(pts1) < 1:
             print_info_red(f"{cam0}--{cam1} no crosspondence and ignore.")

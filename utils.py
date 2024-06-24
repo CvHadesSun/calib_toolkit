@@ -100,13 +100,18 @@ def compute_extrs_handle(data):
     cams_extrs["Cam0"] = np.eye(4)
 
     for i in range(1, 6):
-
         cams_extrs[f"Cam{i}"] = cams_extrs[f"Cam{i-1}"] @ np.array(
             data[f"Cam{i-1}_Cam{i}"])
 
     cams_extrs["Cam6"] = cams_extrs["Cam0"]  @ np.array(data["Cam0_Cam6"])
 
     for i in range(7, 12):
+        cams_extrs[f"Cam{i}"] = cams_extrs[f"Cam{i-1}"] @ np.array(
+            data[f"Cam{i-1}_Cam{i}"])
+
+    cams_extrs[f"Cam{12}"] = np.array(data[f"Cam{0}_Cam{12}"])
+
+    for i in range(13, 16):
         cams_extrs[f"Cam{i}"] = cams_extrs[f"Cam{i-1}"] @ np.array(
             data[f"Cam{i-1}_Cam{i}"])
 

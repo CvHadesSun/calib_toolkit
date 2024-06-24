@@ -56,6 +56,9 @@ def config_args():
     parser.add_argument('--cam_ids',  nargs='+',
                         help='vis which camera pcd', default=[])
 
+    parser.add_argument('--vis_pcd',  nargs='+',
+                        help='vis raw depth camera pcds', default=[])
+
     args = parser.parse_args()
 
     return args
