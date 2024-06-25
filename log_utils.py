@@ -5,17 +5,6 @@ import numpy as np
 import _global
 
 
-class Logger:
-
-    def __init__(self) -> None:
-        pass
-
-
-def print_error():
-
-    pass
-
-
 def print_stereo_camera_data_info(cam_01, min_t, max_t, len_t):
 
     VERBOSE = _global.get_value('verbose')

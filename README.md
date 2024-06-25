@@ -22,15 +22,32 @@ colorama
 -v --verbose : Enable verbose output
 --with_refine : with 3d pts refine processing
 --undistort : undistort the rgb and depth
---operation : uthe calib operation: (0: calib), (1: error inference), (2: pcd vis)
+--operation : uthe calib operation: (0: calib), (1: error inference), (2: pcd vis) (3: raw pcd vis) (4:calib fish eye camera intr.), (5: vis undistorted result.)
 --frame_id : the pcd vis frame id,default=0
 --cam_ids : vis which camera pcd, defalut = [all cameras.]
 --vis_pcd : vis raw depth camera pcds,default=[]
+--intr_cams : need to calib fish eye intr cameras
+--undist_cams : need to vis the undistort cameras results
 
 ```
 
 
 ## pipeline
+
+**Capture the  raw data to calib the fish eye intr and dist parameters like following example**
+![](media/intr_example.png)
+
+0. calib fish eye camera intr
+
+```
+python demo.py -s path/to/data --operation 4 -n 16 --intr_cams Cam12 Cam13 Cam14 Cam15 
+```
+
+**check intr and dist for fish eye camera**
+```
+python demo.py -s path/to/data --operation 5 -n 16 --undist_cams Cam12 Cam13 Cam14 Cam15 
+```
+
 1. calib camera
 
 ```

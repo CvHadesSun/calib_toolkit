@@ -1,3 +1,4 @@
+from xml.dom import minidom
 import numpy as np
 from itertools import combinations
 import os
@@ -234,7 +235,7 @@ def get_batch_tm(files):
     return min(tms), max(tms)
 
 
-def undist_rgbd(coffs, intr, rgb, depth):
+def undist_rgbd(coffs, intr, rgb, depth=None):
 
     w, h, _ = rgb.shape
 
@@ -247,10 +248,12 @@ def undist_rgbd(coffs, intr, rgb, depth):
     color_image_rect = cv2.remap(
         rgb, mapx_color, mapy_color, cv2.INTER_NEAREST)
 
-    # Apply the rectification maps to the depth image
-    depth_image_rect = cv2.remap(
-        depth, mapx_depth, mapy_depth, cv2.INTER_NEAREST)
-
+    if depth is not None:
+        # Apply the rectification maps to the depth image
+        depth_image_rect = cv2.remap(
+            depth, mapx_depth, mapy_depth, cv2.INTER_NEAREST)
+    else:
+        depth_image_rect = None
     # a2 = 0.5
     # a1 = 0.3
     # # result = cv2.addWeighted(rgb,a1,color_image_rect,a2,0)
@@ -464,3 +467,50 @@ def write_calib_error(err, out_dir):
 
         json.dump(err, fp, indent=4)
         fp.close()
+
+
+def write_xml_file(color_intrinsic, color_distortion, depth_intrinsic, depth_distortion, h, w, file_path):
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    opencv_storage = ET.Element("opencv_storage")
+
+    def create_camera_node(name, intrinsic, distortion):
+        camera_node = ET.SubElement(opencv_storage, name)
+
+        image_size = ET.SubElement(camera_node, "ImageSize")
+        image_size.text = f"{h} {w}"
+
+        intrinsic_node = ET.SubElement(
+            camera_node, "Intrinsic", type_id="opencv-matrix")
+        rows = ET.SubElement(intrinsic_node, "rows")
+        rows.text = str(intrinsic.shape[0])
+        cols = ET.SubElement(intrinsic_node, "cols")
+        cols.text = str(intrinsic.shape[1])
+        dt = ET.SubElement(intrinsic_node, "dt")
+        dt.text = "f"
+        data = ET.SubElement(intrinsic_node, "data")
+        data.text = ' '.join(map(str, intrinsic.flatten()))
+
+        distortion_node = ET.SubElement(
+            camera_node, "Distortion", type_id="opencv-matrix")
+        rows = ET.SubElement(distortion_node, "rows")
+        rows.text = str(distortion.shape[0])
+        cols = ET.SubElement(distortion_node, "cols")
+        cols.text = str(distortion.shape[1])
+        dt = ET.SubElement(distortion_node, "dt")
+        dt.text = "f"
+        data = ET.SubElement(distortion_node, "data")
+        data.text = ' '.join(map(str, distortion.flatten()))
+
+    create_camera_node("Color", color_intrinsic, color_distortion)
+    create_camera_node("Depth", depth_intrinsic, depth_distortion)
+
+    # Prettify the XML
+    xml_str = ET.tostring(opencv_storage, encoding='utf-8')
+    parsed_xml = minidom.parseString(xml_str)
+    pretty_xml_str = parsed_xml.toprettyxml(indent="  ")
+
+    with open(file_path, "w") as f:
+        f.write(pretty_xml_str)

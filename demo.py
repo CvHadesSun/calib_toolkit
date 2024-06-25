@@ -239,6 +239,62 @@ def main(args):
                 os.remove(new_depth)
                 os.remove(new_img)
 
+    elif OP == 4:
+
+        # calib fish eye camera intr
+
+        data_dir = calib_handle.dataset.root_dir
+        cam_extr = calib_handle.extr_cams
+        out_paths = {}
+
+        files = os.listdir(data_dir)
+
+        calib_handle.set_cailb_cams(args.intr_cams)
+
+        for cam in cam_extr:
+            for item in files:
+                if cam in item and 'xml' not in item:
+                    out_paths[cam] = f"{data_dir}/{item}.xml"
+
+        # calib
+        calib_handle.calib_intrs()
+        # calib_handle.fish_eye_intr("Cam14")
+        #
+        calibed_intrs = calib_handle.calibed_intrs
+
+        for key in calibed_intrs:
+            intr = calibed_intrs[key]['intr']
+            dist = calibed_intrs[key]['dist']
+            w = calibed_intrs[key]['w']
+            h = calibed_intrs[key]['h']
+
+            write_xml_file(intr, dist, intr, dist, h, w, out_paths[key])
+
+        failed_calibed = calib_handle.get_intr_failed()
+        print_info_red(
+            f'>> fish eye camera intr calib failed {failed_calibed}.', output=True)
+
+    elif OP == 5:
+        frame_id = args.frame_id
+        cam_data = calib_handle.dataset.cam_data
+        cam_ids = args.undist_cams
+        if len(cam_ids) > 0:
+            for key in cam_ids:
+                img = cam_data[key]['rgbs'][frame_id]
+                base_name = os.path.basename(img).replace('bmp', 'png')
+
+                intr = np.array(calib_handle.dataset.cam_intrs[key]['intr'])
+                dist = np.array(calib_handle.dataset.cam_intrs[key]['dist'])
+                # depth = cam_data[key]['depths'][frame_id]
+
+                bmp_img = cv2.imread(img)
+                # depth_img = cv2.imread(depth, -1)
+
+                undist_img, undist_depth = undist_rgbd(
+                    dist, intr, bmp_img, depth=None)
+
+                cv2.imwrite(
+                    f'{cfg.output_path}/undistorted_{base_name}', undist_img)
     else:
         print_info_red(
             f">> OP {OP} not support, please check:(0: calib), (1: error inference), (2: pcd vis)", output=True)

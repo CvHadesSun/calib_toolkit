@@ -49,7 +49,8 @@ def config_args():
                         help='undistort the rgb and depth')
 
     parser.add_argument('--operation', type=int,
-                        help='the calib operation: (0: calib), (1: error inference), (2: pcd vis)', default=0)
+                        help='the calib operation: (0: calib), (1: error inference), (2: pcd vis) \
+                        (3: raw pcd vis) (4:calib fish eye camera intr.), (5: vis undistorted result.)', default=0)
 
     parser.add_argument('--frame_id', type=int,
                         help='the pcd vis frame id', default=0)
@@ -58,6 +59,12 @@ def config_args():
 
     parser.add_argument('--vis_pcd',  nargs='+',
                         help='vis raw depth camera pcds', default=[])
+
+    parser.add_argument('--intr_cams',  nargs='+',
+                        help='need to calib fish eye intr cameras', default=[])
+
+    parser.add_argument('--undist_cams',  nargs='+',
+                        help='need to vis the undistort cameras results', default=[])
 
     args = parser.parse_args()
 

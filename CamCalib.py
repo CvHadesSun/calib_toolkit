@@ -32,10 +32,19 @@ class Caliber:
         objp *= self.square_size
         self.objp = objp
 
+        _objp = np.zeros(
+            (1, self.chessboard_size[0]*self.chessboard_size[1], 3), np.float32)
+
+        _objp[0, :, :2] = np.mgrid[0:self.chessboard_size[0],
+                                   0:self.chessboard_size[1]].T.reshape(-1, 2)
+        self._objp = _objp
+
         self.cam_extrs_2 = {}
         self.rms_threshold = 2.0
 
-        self.atuo_calib_combinations()
+        # self.atuo_calib_combinations()
+
+        self.calib_intrs_cam = self.extr_cams
 
         self.cam_intrs = self.dataset.cam_intrs
 
@@ -46,6 +55,8 @@ class Caliber:
 
         self.calib_errors = {}
         self.calib_errors_rms = {}
+
+        self.calibed_intrs = {}
 
     def calib_stereo(self, cam0, cam1, only_pair=False):
 
@@ -363,3 +374,87 @@ class Caliber:
                     result = future.result()
                 except Exception as exc:
                     print(f"Task {task_id} generated an exception: {exc}")
+
+    def fish_eye_intr(self, cam):
+        cam_data = self.dataset.cam_data[cam]
+        objpoints = []
+        imgpoints = []
+
+        num_frame = 0
+        for i in range(len(cam_data['rgbs'])):
+            img_left = cv2.imread(cam_data["rgbs"][i])
+            gray_left = cv2.cvtColor(img_left, cv2.COLOR_BGR2GRAY)
+
+            ret_left, corners_left = cv2.findChessboardCorners(
+                gray_left, self.chessboard_size, None)
+
+            if ret_left:
+                objpoints.append(self._objp)
+                corners2_left = cv2.cornerSubPix(
+                    gray_left, corners_left, (11, 11), (-1, -1), self.criteria)
+                imgpoints.append(corners2_left)
+
+                num_frame += 1
+            if num_frame > 20:
+                break
+
+        if len(objpoints) < 15:
+            return
+
+        # Calibration
+        K = np.zeros((3, 3))
+        D = np.zeros((4, 1))
+        rvecs = []
+        tvecs = []
+
+        ret, cam0_intr, cam0_dist, rvecs_l, tvecs_l = cv2.calibrateCamera(
+            objpoints, imgpoints, gray_left.shape[::-1], None, None)
+
+        # ret, cam0_intr, cam0_dist, rvecs, tvecs = cv2.fisheye.calibrate(
+        #     objpoints, imgpoints, gray_left.shape[::-1], None, None)
+
+        # rms, _, _, _, _ = cv2.calibrateCamera(
+        #     objpoints,
+        #     imgpoints,
+        #     gray_left.shape[::-1],
+        #     K,
+        #     D,
+        #     rvecs,
+        #     tvecs,
+        #     cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC,
+        #     self.criteria
+        # )
+
+        self.calibed_intrs[cam] = {
+            "intr": cam0_intr,
+            "dist": cam0_dist,
+            "w": gray_left.shape[1],
+            "h": gray_left.shape[0],
+        }
+        # return K, D
+
+    def calib_intrs(self, num_tasks=5):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_tasks) as executor:
+            future_to_task = {executor.submit(
+                self.fish_eye_intr, cam): cam for cam in self.calib_intrs_cam}
+
+            # Process the results as they complete
+            for future in concurrent.futures.as_completed(future_to_task):
+                task_id = future_to_task[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    print(f"Task {task_id} generated an exception: {exc}")
+
+    def set_cailb_cams(self, cams):
+        self.calib_intrs_cam = cams
+
+    def get_intr_failed(self):
+
+        failed_calibed = []
+
+        for key in self.calib_intrs_cam:
+            if key not in self.calibed_intrs.keys():
+                failed_calibed.append(key)
+
+        return failed_calibed
