@@ -66,6 +66,9 @@ def config_args():
     parser.add_argument('--undist_cams',  nargs='+',
                         help='need to vis the undistort cameras results', default=[])
 
+    parser.add_argument('--depth_trunc', type=float,
+                        help='the threshold of trunc of depth for generating pcd', default=10.)
+
     args = parser.parse_args()
 
     return args

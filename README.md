@@ -28,7 +28,7 @@ colorama
 --vis_pcd : vis raw depth camera pcds,default=[]
 --intr_cams : need to calib fish eye intr cameras
 --undist_cams : need to vis the undistort cameras results
-
+--depth_trunc ： the threshold of trunc of depth for generating pcd,default=10.
 ```
 
 
@@ -64,7 +64,7 @@ python demo.py -s path/to/data --operation 2 -n 16 --frame_id 10
 python demo.py -s path/to/data --operation 1 -n 16 
 ```
 
-4. compute error.
+4. raw pcd generation.
 ```
-python demo.py -s path/to/data --operation 3 -n 16 --vis_pcd Cam0 Cam1 Cam2 Cam10 --frame_id 0
+python demo.py -s path/to/data --operation 3 -n 16 --vis_pcd Cam0 Cam1 Cam2 Cam10 --frame_id 0 --depth_trunc 10.0
 ```

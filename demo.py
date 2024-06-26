@@ -171,7 +171,8 @@ def main(args):
 
             for key in final_extrs.keys():
                 img = cam_data[key]['rgbs'][frame_id]
-                base_name = os.path.basename(img).replace('bmp', 'png')
+                base_name = os.path.basename(img).replace(
+                    'bmp', 'png').replace('jpg', 'png')
 
                 intr = np.array(calib_handle.dataset.cam_intrs[key]['intr'])
                 dist = np.array(calib_handle.dataset.cam_intrs[key]['dist'])
@@ -198,7 +199,8 @@ def main(args):
 
                 out_name = f"{cfg.output_path}/{key}.ply"
 
-                img2pcd(new_img, new_depth, intr, extr, out_name)
+                img2pcd(new_img, new_depth, intr, extr,
+                        out_name, dt=args.depth_trunc)
                 os.remove(new_depth)
                 os.remove(new_img)
 
@@ -211,7 +213,8 @@ def main(args):
         if len(cam_ids) > 0:
             for key in cam_ids:
                 img = cam_data[key]['rgbs'][frame_id]
-                base_name = os.path.basename(img).replace('bmp', 'png')
+                base_name = os.path.basename(img).replace(
+                    'bmp', 'png').replace('jpg', 'png')
 
                 intr = np.array(calib_handle.dataset.cam_intrs[key]['intr'])
                 dist = np.array(calib_handle.dataset.cam_intrs[key]['dist'])
@@ -234,11 +237,11 @@ def main(args):
                 new_img = f'{cfg.output_path}/{base_name}'
                 new_depth = f"{cfg.output_path}/depth_{base_name}"
                 extr = np.eye(4)
-                out_name = f"raw_{cfg.output_path}/{key}.ply"
-                img2pcd(new_img, new_depth, intr, extr, out_name)
+                out_name = f"{cfg.output_path}/raw_{key}.ply"
+                img2pcd(new_img, new_depth, intr, extr,
+                        out_name, dt=args.depth_trunc)
                 os.remove(new_depth)
                 os.remove(new_img)
-
     elif OP == 4:
 
         # calib fish eye camera intr
