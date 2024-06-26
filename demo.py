@@ -130,6 +130,7 @@ def main(args):
                 f'check not calibed camera, already calibed are {calibed_cam} ', output=True)
 
         else:
+            calib_handle.atuo_calib_combinations()
             calib_handle.set_global_extrs(final_extrs)
             calib_handle.compute_error_multi(num_tasks=10)
             # calib_handle.bundle_adjust(['Cam0', "Cam1"])
